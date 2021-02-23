@@ -1,25 +1,25 @@
 module Kolors
   class DominantColors
     attr_accessor :src_image_path
-    
+
     def initialize(src_image_path)
       @src_image_path = src_image_path
     end
-    
+
     def color_bins_result
       @color_bin_counts_result ||= extract_color_bin_percentages_from_image
     end
-    
+
     private
-    
+
     def percentize(hash)
       hash.collect{|color, count| {color => ((count.to_f / @colors.size.to_f)*100)}}.sort!{|a,b| b[b.keys.first] <=> a[a.keys.first] }
     end
-    
+
     def group_hashes_sum_values(array)
       array.inject{|color, count| color.merge( count ){|k, old_v, new_v| old_v + new_v}}
     end
-    
+
     def extract_color_bin_percentages_from_image
       create_thumb_crop_and_convert_to_png!
       colors = detect_color_bin_percentages
@@ -35,7 +35,7 @@ module Kolors
       @source_image = open_source_image
       @downsampled_image = open_downsampled_image
 
-      Cocaine::CommandLine.new(Kolors.options[:image_magick_path], "':in[0]' -resize :resolution -gravity Center -crop 90x80%+0+0 :out").
+      Terrapin::CommandLine.new(Kolors.options[:image_magick_path], "':in[0]' -resize :resolution -gravity Center -crop 90x80%+0+0 :out").
         run(:in => File.expand_path(@source_image.path),
             :resolution => Kolors.options[:resolution],
             :out => File.expand_path(@downsampled_image.path))
@@ -61,17 +61,17 @@ module Kolors
       tempfile.binmode
       tempfile
     end
-    
+
     def collect_pixels
       @colors ||= ChunkyPNG::Image.from_file(File.expand_path(@downsampled_image.path)).pixels.collect {|c| ChunkyPNG::Color.to_truecolor_bytes c }
     end
-    
+
     def detect_color_bin_percentages
       color_bins = Array.new
       collect_pixels.collect{|r,g,b| Kolors::Rgb.new(r,g,b).to_lab}.each do |color|
         color_bins << {KEY_COLORS[KEY_COLORS.keys.sort_by {|c| dist(color, c) }.first] => 1}
       end
-      
+
       percentize(group_hashes_sum_values(color_bins))
     end
 

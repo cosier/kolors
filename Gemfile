@@ -1,12 +1,12 @@
 source 'https://rubygems.org'
 
-gem 'cocaine'
+gem 'terrapin'
 gem 'oily_png'
 
 group :development do
   gem 'pry'
   gem 'pry-doc'
-  gem 'ruby-prof'
+  # gem 'ruby-prof'
 end
 
 group :test do
